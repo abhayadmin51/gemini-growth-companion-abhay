@@ -1,0 +1,4 @@
+node_modules/
+backend/app/gemini_key.txt
+*.env
+.env
