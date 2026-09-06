@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     google_cloud_project: str = "gemini-growth-companion-abhay"
     firebase_project_id: str = "gemini-growth-companion-abhay"
     gemini_secret_id: str = "gemini-api-key"
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3.6-flash"
     environment: str = "development"
 
     allowed_origins: str = (
