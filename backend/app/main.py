@@ -16,6 +16,9 @@ from app.models import (
     ConversationItem,
     SummaryRequest,
     SummaryResponse,
+    GrowthPlanListItem,
+    GrowthPlanRequest,
+    GrowthPlanResponse,
 )
 
 logging.basicConfig(
@@ -251,3 +254,63 @@ async def summarize(
         conversation_id=request.conversation_id,
         summary=summary,
     )
+
+
+@app.post(
+    "/api/growth-plans",
+    response_model=GrowthPlanResponse,
+)
+async def create_growth_plan(
+    request: GrowthPlanRequest,
+    current_user: dict = Depends(get_current_user),
+    firestore_service: FirestoreService = Depends(get_firestore_service),
+    gemini_service: GeminiService = Depends(get_gemini_service),
+) -> GrowthPlanResponse:
+    uid = current_user["uid"]
+
+    firestore_service.ensure_user_profile(
+        uid=uid,
+        email=current_user.get("email"),
+        name=current_user.get("name"),
+    )
+
+    try:
+        plan = gemini_service.generate_growth_plan(request)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+    except RuntimeError as exc:
+        logger.exception(
+            "Growth plan generation failed for uid=%s",
+            uid,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="The AI service could not generate the growth plan.",
+        ) from exc
+
+    plan_id = firestore_service.save_growth_plan(
+        uid=uid,
+        request=request,
+        plan=plan,
+    )
+
+    return GrowthPlanResponse(
+        plan_id=plan_id,
+        plan=plan,
+    )
+
+
+@app.get(
+    "/api/growth-plans",
+    response_model=list[GrowthPlanListItem],
+)
+async def list_growth_plans(
+    current_user: dict = Depends(get_current_user),
+    firestore_service: FirestoreService = Depends(get_firestore_service),
+) -> list[dict]:
+    uid = current_user["uid"]
+
+    return firestore_service.list_growth_plans(uid=uid)

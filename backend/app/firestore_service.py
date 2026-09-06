@@ -4,7 +4,11 @@ from uuid import uuid4
 
 from google.cloud import firestore
 
-from app.models import JournalSummary
+from app.models import (
+    GrowthPlan,
+    GrowthPlanRequest,
+    JournalSummary,
+)
 
 
 class FirestoreService:
@@ -234,6 +238,119 @@ class FirestoreService:
             )
 
         return results
+
+    def save_growth_plan(
+        self,
+        uid: str,
+        request: GrowthPlanRequest,
+        plan: GrowthPlan,
+    ) -> str:
+        plan_id = uuid4().hex
+
+        plan_reference = (
+            self._user_reference(uid)
+            .collection("growth_plans")
+            .document(plan_id)
+        )
+
+        plan_reference.set(
+            {
+                "owner_uid": uid,
+                "goal": request.goal,
+                "current_experience": (
+                    request.current_experience
+                ),
+                "target_date": (
+                    request.target_date.isoformat()
+                ),
+                "weekly_hours": (
+                    request.weekly_hours
+                ),
+                **plan.model_dump(),
+                "created_at": (
+                    firestore.SERVER_TIMESTAMP
+                ),
+                "updated_at": (
+                    firestore.SERVER_TIMESTAMP
+                ),
+            }
+        )
+
+        return plan_id
+
+    def list_growth_plans(
+        self,
+        uid: str,
+        limit: int = 20,
+    ) -> list[dict[str, Any]]:
+        query = (
+            self._user_reference(uid)
+            .collection("growth_plans")
+            .order_by(
+                "created_at",
+                direction=firestore.Query.DESCENDING,
+            )
+            .limit(limit)
+        )
+
+        plans: list[dict[str, Any]] = []
+
+        for document in query.stream():
+            data = document.to_dict() or {}
+
+            if data.get("owner_uid") != uid:
+                continue
+
+            plans.append(
+                {
+                    "plan_id": document.id,
+                    "plan_title": data.get(
+                        "plan_title",
+                        "Growth Plan",
+                    ),
+                    "goal_summary": data.get(
+                        "goal_summary",
+                        "",
+                    ),
+                    "target_date": data.get(
+                        "target_date",
+                        "",
+                    ),
+                    "weekly_hours": int(
+                        data.get("weekly_hours", 0)
+                    ),
+                    "created_at": (
+                        self._datetime_to_string(
+                            data.get("created_at")
+                        )
+                    ),
+                }
+            )
+
+        return plans
+
+    def get_growth_plan(
+        self,
+        uid: str,
+        plan_id: str,
+    ) -> dict[str, Any] | None:
+        plan_reference = (
+            self._user_reference(uid)
+            .collection("growth_plans")
+            .document(plan_id)
+        )
+
+        snapshot = plan_reference.get()
+
+        if not snapshot.exists:
+            return None
+
+        data = snapshot.to_dict() or {}
+
+        if data.get("owner_uid") != uid:
+            return None
+
+        return data
 
     @staticmethod
     def _datetime_to_string(

@@ -25,6 +25,7 @@ export default function Dashboard() {
       <button onClick={logout}>Logout</button>
       <button onClick={printToken}>Print Token</button>
 	  <button onClick={()=>navigate("/journal")}>Open Journal</button>
+	  <button onClick={() => navigate("/growth-plan")}>Create AI Growth Plan</button>
     </div>
   );
 }

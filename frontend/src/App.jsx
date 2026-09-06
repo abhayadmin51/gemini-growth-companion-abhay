@@ -10,6 +10,7 @@ import ProtectedRoute from
 "./components/ProtectedRoute";
 
 import Journal from "./pages/Journal";
+import GrowthPlan from "./pages/GrowthPlan";
 
 function App() {
 
@@ -28,6 +29,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+		<Route
+		path="/growth-plan"
+		element={
+		<ProtectedRoute>
+			<GrowthPlan />
+		</ProtectedRoute>
+		  }
+/>
 		<Route
           path="/journal"
           element={
