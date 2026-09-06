@@ -2,7 +2,7 @@ import axios from "axios";
 import { auth } from "../firebase/firebaseConfig";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:8000",
+  baseURL: "https://gemini-growth-companion--abhay-backend-377137005888.asia-south1.run.app/",
 });
 
 apiClient.interceptors.request.use(
