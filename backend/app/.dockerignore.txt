@@ -1,0 +1,13 @@
+venv
+.venv**_pycache__
+*.pyc
+*.pyo
+*.pyd
+.env**env.*
+!.env.example
+gemini_key.tx**service-account*.json
+.firebase
+.**t
+.gitignore
+.pytest_cache
+.vscod**.idea

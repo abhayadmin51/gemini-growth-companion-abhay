@@ -1,0 +1,32 @@
+#**ython
+venv/
+.venv/
+__pycache__/
+***y[cod]
+.pytest_cache/
+
+# Node
+nod**modules/
+frontend/dist/
+
+# Secret**and local configuration
+.env
+.env**
+!.env.example
+gemini_key.txt
+*.p**
+*.key
+service-account*.json
+fire**se-adminsdk*.json
+
+# Firebase
+.fi**base/
+firebase-debug.log
+
+# IDE
+.**code/
+.idea/
+
+# Operating system
+**S_Store
+Thumbs.db

@@ -1,0 +1,25 @@
+FROM python:3.12-slim
+
+ENV PYTH**DONTWRITEBYTECODE=1
+ENV PYTHONUNB**FERED=1
+ENV PORT=8080
+
+WORKDIR /a**
+
+RUN addgroup --system appgroup **    && adduser --system --ingroup**ppgroup appuser
+
+COPY requirement**txt .
+
+RUN pip install --no-cache**ir --upgrade pip \
+    && pip ins**ll --no-cache-dir -r requirements**xt
+
+COPY app ./app
+
+USER appuser
+**MD exec gunicorn \
+    --bind :${**RT} \
+    --workers 1 \
+    --thr**ds 8 \
+    --timeout 120 \
+    --**rker-class uvicorn.workers.Uvicor**orker \
+    app.main:app
